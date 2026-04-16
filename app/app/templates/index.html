@@ -1,0 +1,45 @@
+{% extends "base.html" %} {% block content %}
+
+<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+  <a
+    href="/speakers"
+    class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition"
+  >
+    <h2 class="text-lg font-semibold mb-2">👤 Speakers</h2>
+    <p class="text-gray-500 text-sm">Manage speaker profiles</p>
+  </a>
+
+  <a
+    href="/sessions"
+    class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition"
+  >
+    <h2 class="text-lg font-semibold mb-2">📅 Sessions</h2>
+    <p class="text-gray-500 text-sm">Schedule and browse sessions</p>
+  </a>
+
+  <a
+    href="/questions"
+    class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition"
+  >
+    <h2 class="text-lg font-semibold mb-2">❓ Q&A</h2>
+    <p class="text-gray-500 text-sm">Audience questions queue</p>
+  </a>
+
+  <a
+    href="/leaderboard"
+    class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition"
+  >
+    <h2 class="text-lg font-semibold mb-2">🏆 Leaderboard</h2>
+    <p class="text-gray-500 text-sm">Top engaged attendees</p>
+  </a>
+
+  <a
+    href="/announcements-page"
+    class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition"
+  >
+    <h2 class="text-lg font-semibold mb-2">📢 Announcements</h2>
+    <p class="text-gray-500 text-sm">Broadcast live updates</p>
+  </a>
+</div>
+
+{% endblock %}

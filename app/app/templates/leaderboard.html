@@ -1,0 +1,72 @@
+{% extends "base.html" %} {% block content %}
+
+<div
+  class="bg-white p-6 rounded-xl shadow"
+  x-data="leaderApp()"
+  x-init="load()"
+>
+  <h2 class="text-lg font-semibold mb-4">🏆 Leaderboard</h2>
+
+  <div class="flex gap-2 mb-4">
+    <input
+      class="border rounded px-3 py-2"
+      placeholder="Name"
+      x-model="attendee"
+    />
+    <input
+      class="border rounded px-3 py-2 w-24"
+      placeholder="Points"
+      x-model="points"
+    />
+
+    <button @click="award()" class="bg-blue-600 text-white px-4 py-2 rounded">
+      Award
+    </button>
+  </div>
+
+  <table class="w-full text-sm">
+    <thead>
+      <tr class="text-left border-b">
+        <th>#</th>
+        <th>Name</th>
+        <th>Score</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <template x-for="p in board">
+        <tr class="border-b">
+          <td x-text="p.rank"></td>
+          <td x-text="p.attendee"></td>
+          <td x-text="p.score"></td>
+        </tr>
+      </template>
+    </tbody>
+  </table>
+</div>
+
+<script>
+  function leaderApp() {
+    return {
+      attendee: "",
+      points: 10,
+      board: [],
+
+      async award() {
+        await fetch("/leaderboard/award", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(this),
+        });
+        this.load();
+      },
+
+      async load() {
+        const res = await fetch("/leaderboard");
+        this.board = await res.json();
+      },
+    };
+  }
+</script>
+
+{% endblock %}

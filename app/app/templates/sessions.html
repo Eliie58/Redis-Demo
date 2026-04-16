@@ -1,0 +1,85 @@
+{% extends "base.html" %} {% block content %}
+
+<div x-data="sessionApp()">
+  <div class="bg-white p-6 rounded-xl shadow mb-6">
+    <h2 class="text-lg font-semibold mb-4">Add Session</h2>
+
+    <div class="grid md:grid-cols-5 gap-3">
+      <input
+        class="border rounded px-2 py-1"
+        placeholder="ID"
+        x-model="session_id"
+      />
+      <input
+        class="border rounded px-2 py-1"
+        placeholder="Title"
+        x-model="title"
+      />
+      <input
+        class="border rounded px-2 py-1"
+        placeholder="Speaker"
+        x-model="speaker_id"
+      />
+      <input
+        class="border rounded px-2 py-1"
+        placeholder="Timestamp"
+        x-model="start_ts"
+      />
+      <input
+        class="border rounded px-2 py-1"
+        placeholder="Room"
+        x-model="room"
+      />
+    </div>
+
+    <button
+      @click="create()"
+      class="mt-3 bg-blue-600 text-white px-4 py-2 rounded"
+    >
+      Add
+    </button>
+  </div>
+
+  <div class="flex justify-between mb-4">
+    <h3 class="text-lg font-semibold">Upcoming Sessions</h3>
+    <button @click="load()" class="text-sm text-blue-600">Refresh</button>
+  </div>
+
+  <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <template x-for="s in sessions">
+      <div class="bg-white p-4 rounded-xl shadow">
+        <h4 class="font-semibold" x-text="s.title"></h4>
+        <p class="text-sm text-gray-500" x-text="'Room: ' + s.room"></p>
+        <p class="text-xs text-gray-400" x-text="s.start_ts"></p>
+      </div>
+    </template>
+  </div>
+</div>
+
+<script>
+  function sessionApp() {
+    return {
+      session_id: "",
+      title: "",
+      speaker_id: "",
+      start_ts: "",
+      room: "",
+      sessions: [],
+
+      async create() {
+        await fetch("/sessions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(this),
+        });
+      },
+
+      async load() {
+        const res = await fetch("/sessions/upcoming");
+        this.sessions = await res.json();
+      },
+    };
+  }
+</script>
+
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "base.html" %} {% block content %}
+
+<div class="grid md:grid-cols-2 gap-6" x-data="qaApp()">
+  <div class="bg-white p-6 rounded-xl shadow">
+    <h2 class="font-semibold mb-3">Ask a Question</h2>
+
+    <input
+      class="w-full border rounded px-3 py-2 mb-2"
+      placeholder="Session"
+      x-model="session"
+    />
+    <input
+      class="w-full border rounded px-3 py-2 mb-2"
+      placeholder="Name"
+      x-model="attendee"
+    />
+    <input
+      class="w-full border rounded px-3 py-2 mb-2"
+      placeholder="Question"
+      x-model="question"
+    />
+
+    <button @click="send()" class="bg-blue-600 text-white px-4 py-2 rounded">
+      Submit
+    </button>
+  </div>
+
+  <div class="bg-white p-6 rounded-xl shadow">
+    <h2 class="font-semibold mb-3">Moderator</h2>
+
+    <button
+      @click="next()"
+      class="bg-gray-800 text-white px-4 py-2 rounded mb-3"
+    >
+      Next Question
+    </button>
+
+    <div class="text-sm bg-gray-100 p-3 rounded">
+      <pre x-text="JSON.stringify(current, null, 2)"></pre>
+    </div>
+  </div>
+</div>
+
+<script>
+  function qaApp() {
+    return {
+      session: "",
+      attendee: "",
+      question: "",
+      current: null,
+
+      async send() {
+        await fetch("/questions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            session_id: this.session,
+            attendee: this.attendee,
+            question: this.question,
+          }),
+        });
+      },
+
+      async next() {
+        const res = await fetch(`/questions/${this.session}/next`);
+        this.current = await res.json();
+      },
+    };
+  }
+</script>
+
+{% endblock %}

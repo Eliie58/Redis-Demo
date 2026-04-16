@@ -1,0 +1,64 @@
+{% extends "base.html" %} {% block content %}
+
+<div class="bg-white p-6 rounded-xl shadow max-w-xl" x-data="annApp()">
+  <h2 class="text-lg font-semibold mb-4">📢 Broadcast</h2>
+
+  <div class="flex gap-2 mb-3">
+    <!-- CHANNEL SELECT -->
+    <select class="border rounded px-3 py-2 bg-white" x-model="channel">
+      <option value="main">Main</option>
+      <option value="room1">Room 1</option>
+      <option value="room2">Room 2</option>
+      <option value="vip">VIP</option>
+    </select>
+
+    <!-- MESSAGE -->
+    <input
+      class="flex-1 border rounded px-3 py-2"
+      placeholder="Message"
+      x-model="message"
+      @keydown.enter="send()"
+    />
+
+    <!-- SEND -->
+    <button
+      @click="send()"
+      class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+    >
+      Send
+    </button>
+  </div>
+
+  <!-- FEEDBACK -->
+  <div x-show="sent" class="text-green-600 text-sm">Message sent ✅</div>
+</div>
+
+<script>
+  function annApp() {
+    return {
+      message: "",
+      channel: "main",
+      sent: false,
+
+      async send() {
+        if (!this.message.trim()) return;
+
+        await fetch("/announce", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            channel: this.channel,
+            message: this.message,
+          }),
+        });
+
+        this.message = "";
+        this.sent = true;
+
+        setTimeout(() => (this.sent = false), 2000);
+      },
+    };
+  }
+</script>
+
+{% endblock %}

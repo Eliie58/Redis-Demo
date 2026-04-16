@@ -1,0 +1,62 @@
+services:
+  #redis
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - redis-network
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - ping
+      retries: 3
+      timeout: 5s
+  #redis-insight
+  redis-insight:
+    image: redis/redisinsight:latest
+    container_name: redis-insight
+    restart: unless-stopped
+    ports:
+      - "5540:5540"
+    volumes:
+      - redis-insight-data:/data
+    networks:
+      - redis-network
+    depends_on:
+      - redis
+  jupyter:
+    build:
+      context: jupyter
+    ports:
+      - 8889:8888
+    volumes:
+      - ./jupyter-data:/home/jovyan/work
+    networks:
+      - redis-network
+    command: start-notebook.py --NotebookApp.token='token'
+  app:
+    build:
+      context: app
+    volumes:
+      - ./app/:/usr/src/app
+    networks:
+      - redis-network
+    ports:
+      - 5000:5000
+    command: python app/main.py
+    environment:
+      - FLASK_RUN_HOST=0.0.0.0
+
+volumes:
+  redis-data:
+    driver: local
+  redis-insight-data:
+    driver: local
+networks:
+  redis-network:
+    driver: bridge

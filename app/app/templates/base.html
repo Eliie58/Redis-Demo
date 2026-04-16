@@ -1,0 +1,144 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>TechTalks</title>
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Alpine -->
+    <script src="https://unpkg.com/alpinejs" defer></script>
+  </head>
+
+  <body class="bg-gray-100 text-gray-800" x-data="globalApp()">
+    <!-- NAVBAR -->
+
+    <header class="bg-white shadow sticky top-0 z-50">
+      <div
+        class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center"
+      >
+        <h1 class="text-xl font-bold">🎤 TechTalks</h1>
+        <nav class="space-x-6 text-sm font-medium">
+          <a href="/" class="hover:text-blue-600">Home</a>
+          <a href="/speakers" class="hover:text-blue-600">Speakers</a>
+          <a href="/sessions" class="hover:text-blue-600">Sessions</a>
+          <a href="/questions" class="hover:text-blue-600">Q&A</a>
+          <a href="/leaderboard-page" class="hover:text-blue-600"
+            >Leaderboard</a
+          >
+          <a href="/announcements-page" class="hover:text-blue-600"
+            >Announcements</a
+          >
+        </nav>
+      </div>
+    </header>
+
+    <!-- MAIN -->
+
+    <main class="max-w-7xl mx-auto px-6 py-8">
+      {% block content %}{% endblock %}
+    </main>
+
+    <div class="fixed bottom-40 right-4 w-80 bg-white p-3 rounded shadow">
+      <h4 class="text-sm font-semibold mb-2">Listening Channels</h4>
+
+      <div class="space-y-1 text-sm">
+        <template x-for="c in allChannels" :key="c">
+          <label class="flex items-center gap-2">
+            <input
+              type="checkbox"
+              :value="c"
+              @change="toggleChannel(c)"
+              :checked="channels.includes(c)"
+            />
+            <span x-text="c"></span>
+          </label>
+        </template>
+      </div>
+    </div>
+
+    <!-- 🔴 LIVE ANNOUNCEMENT TOASTS -->
+
+    <div class="fixed bottom-4 right-4 space-y-2 w-80">
+      <template x-for="(msg, index) in announcements" :key="index">
+        <div
+          :class="{
+            'bg-blue-600': msg.channel === 'main',
+            'bg-green-600': msg.channel === 'room1',
+            'bg-purple-600': msg.channel === 'vip'
+            }"
+          class="text-green-400 text-sm px-4 py-3 rounded shadow animate-pulse"
+        >
+          <span x-text="msg.text"></span>
+        </div>
+      </template>
+    </div>
+
+    <script>
+      function globalApp() {
+        return {
+          announcements: [],
+
+          // 🔴 available channels
+          allChannels: ["main", "room1", "room2", "vip"],
+
+          // 🔴 selected channels
+          channels: ["main"],
+
+          // 🔴 active EventSource connections
+          connections: {},
+
+          init() {
+            this.loadHistory();
+            this.channels.forEach((c) => this.subscribe(c));
+          },
+
+          async loadHistory() {
+            const res = await fetch("/announcements");
+            this.announcements = await res.json();
+          },
+
+          toggleChannel(channel) {
+            if (this.channels.includes(channel)) {
+              // ❌ unsubscribe
+              this.channels = this.channels.filter((c) => c !== channel);
+              this.unsubscribe(channel);
+            } else {
+              // ✅ subscribe
+              this.channels.push(channel);
+              this.subscribe(channel);
+            }
+          },
+
+          subscribe(channel) {
+            if (this.connections[channel]) return;
+
+            const evt = new EventSource(`/stream/${channel}`);
+
+            evt.onmessage = (e) => {
+              this.announcements.unshift({
+                channel,
+                text: e.data,
+              });
+
+              if (this.announcements.length > 5) {
+                this.announcements.pop();
+              }
+            };
+
+            this.connections[channel] = evt;
+          },
+
+          unsubscribe(channel) {
+            if (this.connections[channel]) {
+              this.connections[channel].close();
+              delete this.connections[channel];
+            }
+          },
+        };
+      }
+    </script>
+  </body>
+</html>
